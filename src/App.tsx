@@ -1,25 +1,56 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import "./App.css";
+import { Mailbox } from "./components/pages/Mailbox";
+import { Login } from "./components/pages/Login";
+import { LoggedArea } from "./components/LoggedArea";
+import { Callback } from "./components/pages/Callback";
+import { AuthProvider } from "./contexts/auth.context";
+import { AccountChoose } from "./components/pages/AccountChoose";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MailboxeChooser } from "./components/pages/MailboxChoose";
 
 function App() {
+  const queryClient = new QueryClient();
+  const router = createBrowserRouter([
+    {
+      element: (
+        <AuthProvider>
+          <Outlet />
+        </AuthProvider>
+      ),
+      children: [
+        {
+          path: "login",
+          Component: Login,
+        },
+        {
+          path: "callback",
+          Component: Callback,
+        },
+        {
+          Component: LoggedArea,
+          children: [
+            {
+              path: "",
+              Component: AccountChoose,
+            },
+            {
+              path: ":accountId",
+              Component: MailboxeChooser,
+            },
+            {
+              path: ":accountId/:mailboxId",
+              Component: Mailbox,
+            },
+          ],
+        },
+      ],
+    },
+  ]);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   );
 }
 
